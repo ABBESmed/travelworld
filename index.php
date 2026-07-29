@@ -29,9 +29,10 @@ require_once __DIR__ . "/config/database.php";
 
     <?php if (isset($_SESSION["user_id"])) { ?>
             <p>Welcome, <?php echo htmlspecialchars($_SESSION["full_name"]) ?> </p>
+            <p><a href="profile.php">My profile</a></p>
             <p><a href="logout.php">Logout</a></p>
     <?php } else{ ?>
-       <p><a href="login.php">Login</a>
+       <p><a href="login.php">Login</a></p>
        <p><a href="register.php">Create an account</a></p>
     <?php } ?>
 </body>

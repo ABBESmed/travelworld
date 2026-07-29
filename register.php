@@ -123,7 +123,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST"){
         <?php
             // now we create the success message to appear only after an account is created
             if ($success_message !== ""){
-                echo "<p>" . htmlspecialchars($success_message) . "<p>"; // htmlspecialchars this makes text safe to display inside html it convert special html characters
+                echo "<p>" . htmlspecialchars($success_message) . "</p>"; // htmlspecialchars this makes text safe to display inside html it convert special html characters
             }
         ?>
 
