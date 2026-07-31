@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 27, 2026 at 01:34 AM
+-- Generation Time: Jul 31, 2026 at 02:03 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -63,6 +63,13 @@ CREATE TABLE `contact_messages` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `contact_messages`
+--
+
+INSERT INTO `contact_messages` (`id`, `full_name`, `email`, `subject`, `message`, `created_at`) VALUES
+(1, 'Abbes Mohammed Zoheir', 'abbes@gmail.com', 'services', 'Keep up the good work', '2026-07-31 11:59:26');
+
 -- --------------------------------------------------------
 
 --
@@ -92,7 +99,7 @@ INSERT INTO `flights` (`id`, `flight_number`, `airline_name`, `departure_airport
 (1, 'AF101', 'Air France', 1, 2, '2026-08-10 08:30:00', '2026-08-10 10:00:00', 120.00, 100, 'scheduled', '2026-07-26 22:33:47', '2026-07-26 22:33:47'),
 (2, 'AF102', 'Air France', 2, 1, '2026-08-10 18:00:00', '2026-08-10 19:30:00', 125.00, 100, 'scheduled', '2026-07-26 22:33:47', '2026-07-26 22:33:47'),
 (3, 'AH201', 'Air Algerie', 1, 3, '2026-08-11 09:15:00', '2026-08-11 10:45:00', 180.00, 120, 'scheduled', '2026-07-26 22:33:47', '2026-07-26 22:33:47'),
-(4, 'AH202', 'Air Algerie', 3, 1, '2026-08-11 16:30:00', '2026-08-11 18:00:00', 175.00, 120, 'scheduled', '2026-07-26 22:33:47', '2026-07-26 22:33:47'),
+(4, 'AH202', 'Air Algerie', 3, 1, '2026-08-11 16:30:00', '2026-08-11 18:00:00', 175.00, 117, 'scheduled', '2026-07-26 22:33:47', '2026-07-31 11:50:43'),
 (5, 'FR301', 'Ryanair', 1, 4, '2026-08-12 07:00:00', '2026-08-12 08:30:00', 95.50, 90, 'scheduled', '2026-07-26 22:33:47', '2026-07-26 22:33:47'),
 (6, 'FR302', 'Ryanair', 4, 1, '2026-08-12 20:00:00', '2026-08-12 21:30:00', 99.50, 90, 'scheduled', '2026-07-26 22:33:47', '2026-07-26 22:33:47'),
 (7, 'VY401', 'Vueling', 2, 5, '2026-08-13 14:20:00', '2026-08-13 16:10:00', 110.00, 110, 'scheduled', '2026-07-26 22:33:47', '2026-07-26 22:33:47'),
@@ -117,6 +124,13 @@ CREATE TABLE `passengers` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `passengers`
+--
+
+INSERT INTO `passengers` (`id`, `reservation_id`, `first_name`, `last_name`, `date_of_birth`, `nationality`, `document_number`, `created_at`) VALUES
+(1, 1, 'Mohammed', 'Abbes', '1998-05-28', 'Algerian', 'DZ3136902889', '2026-07-31 11:19:32');
+
 -- --------------------------------------------------------
 
 --
@@ -135,6 +149,13 @@ CREATE TABLE `reservations` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `reservations`
+--
+
+INSERT INTO `reservations` (`id`, `booking_reference`, `user_id`, `flight_id`, `passenger_count`, `total_price`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'TW6A6C84C4A7037', 1, 4, 1, 175.00, 'confirmed', '2026-07-31 11:19:32', '2026-07-31 11:19:32');
+
 -- --------------------------------------------------------
 
 --
@@ -150,6 +171,14 @@ CREATE TABLE `users` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `profile_picture`, `created_at`, `updated_at`) VALUES
+(1, 'Abbes Mohammed Zoheir', 'abbes@gmail.com', '$2y$10$NkbvVV0nVwm39wynJwWwWO4zqvyQng6RjmMcT8Jqwjjrn1xtmGI.2', NULL, '2026-07-27 19:28:39', '2026-07-27 19:28:39'),
+(2, 'Sarah Martin', 'sarah@example.com', '$2y$10$X6L.MRoakdWUMTZ9oB3sTuhNr18oTHAOTfxOk53dliect83f6WDG6', 'user_2_1785330095.jpeg', '2026-07-27 19:43:06', '2026-07-29 13:05:39');
 
 --
 -- Indexes for dumped tables
@@ -213,31 +242,31 @@ ALTER TABLE `airports`
 -- AUTO_INCREMENT for table `contact_messages`
 --
 ALTER TABLE `contact_messages`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `flights`
 --
 ALTER TABLE `flights`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6153;
 
 --
 -- AUTO_INCREMENT for table `passengers`
 --
 ALTER TABLE `passengers`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `reservations`
 --
 ALTER TABLE `reservations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- Constraints for dumped tables
