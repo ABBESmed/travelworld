@@ -1,39 +1,57 @@
 <?php
 
-session_start();
-// here index.php is the main entrance page of the website
+// Here index.php is the main entrance page of the website
 
 /* 
-i use require_once cause i need to load Another
+I use require_once because I need to load another
+PHP file (database.php) and execute it.
 
-PHP file (database.php) and executes it. once tell php to load that file one time
+once tells PHP to load that file only one time.
 
-__DIR__ returns the folder where index.php is located and . joins text
-
-together in php
+__DIR__ returns the folder where index.php is located
+and . joins text together in PHP.
 */
 
 require_once __DIR__ . "/config/database.php";
 
+// Load the header.
+// header.php starts the session and opens the HTML page.
+require_once __DIR__ . "/includes/header.php";
+
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
+<!-- Main content of the homepage -->
+<main>
+
     <h1>TravelWorld</h1>
 
     <?php if (isset($_SESSION["user_id"])) { ?>
-            <p>Welcome, <?php echo htmlspecialchars($_SESSION["full_name"]) ?> </p>
-            <p><a href="profile.php">My profile</a></p>
-            <p><a href="logout.php">Logout</a></p>
-    <?php } else{ ?>
-       <p><a href="login.php">Login</a></p>
-       <p><a href="register.php">Create an account</a></p>
+
+        <p>
+            Welcome,
+            <?php echo htmlspecialchars($_SESSION["full_name"]); ?>
+        </p>
+
+        <p>
+            <a href="profile.php">My profile</a>
+        </p>
+
+        <p>
+            <a href="logout.php">Logout</a>
+        </p>
+
+    <?php } else { ?>
+
+        <p>
+            <a href="login.php">Login</a>
+        </p>
+
+        <p>
+            <a href="register.php">Create an account</a>
+        </p>
+
     <?php } ?>
-</body>
-</html>
+
+</main>
+
+<?php require_once __DIR__ . "/includes/footer.php"; ?>

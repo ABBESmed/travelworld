@@ -1,0 +1,173 @@
+/* Import the Montserrat and Island Moments fonts from Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Island+Moments&family=Montserrat:wght@400;500;600;700&display=swap");
+
+/* we use this to reset the default spacing and make the size of every element easier to manage*/
+* {
+  margin: 0; /*remove outside space*/
+  padding: 0; /*remove inside space*/
+  box-sizing: border-box; /*keep width and height easy to control*/
+}
+
+/*style the whole website*/
+body {
+  font-family: "Montserrat", sans-serif; /*main website font*/
+  color: #0b2727; /*main text color*/
+  background-color: #ffffff; /*white page background*/
+}
+
+.header {
+  background-color: #ffffff; /*white background*/
+  padding: 20px 0; /*add space above and below the header*/
+}
+
+/* Keep the logo and navigation on the same line */
+.container {
+  width: 90%; /* Use 90% of the page width */
+  max-width: 1200px; /* do not become wider than 1200 (The container can become smaller than 1200px, but it cannot become wider than 1200px) */
+  margin: 0 auto; /* Center the container (divides that remaining 10% equally 5% left 5% right) Without margin: 0 auto, the remaining space will not automatically be split equally */
+  display: flex; /* Put the elements next to each other */
+  align-items: center; /* Align them vertically */
+  justify-content: space-between; /* Logo left, navigation right */
+}
+
+.logo {
+  height: auto; /* prevents the logo from becoming stretched */
+  display: block; /* removes the tiny space that images sometimes have underneath */
+}
+
+.nav {
+  display: flex; /* puts the links beside each other */
+  align-items: center; /* Align them vertically */
+  gap: 30px; /* adds space between each link */
+}
+
+/* Style the navigation links */
+.nav a {
+  color: #0b2727;
+  text-decoration: none; /* remove the underline */
+  font-size: 16px; /* text size */
+  font-weight: 600; /* Medium text thickness */
+}
+
+/* Change the link color when the mouse is over it */
+.nav a:hover {
+  color: #faa935;
+}
+
+/* Style the Register link like a button */
+.nav .register-button {
+  background-color: #faa935;
+  color: #ffffff;
+  padding: 12px 22px;
+  border-radius: 50px;
+}
+
+/* Keep the button text white when the mouse is over it */
+.nav .register-button:hover {
+  color: #ffffff;
+  background-color: #ff7e01;
+}
+
+/* Style the footer */
+.footer {
+  background-color: #ffffff;
+  padding: 50px 0 20px;
+}
+
+/* Put the footer sections next to each other */
+.footer-container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+/* Display the footer links vertically */
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Style the footer links */
+.footer-links a {
+  color: #6e7074;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+/* Change footer link color when the mouse is over it */
+.footer-links a:hover {
+  color: #faa935;
+}
+
+/* Style the footer titles */
+.footer h3 {
+  font-size: 18px;
+  margin-bottom: 18px;
+  color: #0b2727;
+}
+
+/* Control the width of the footer information */
+.footer-info {
+  max-width: 320px;
+}
+
+/* Add space under the footer logo */
+.footer-logo {
+  margin-bottom: 18px;
+}
+
+/* Style the footer description */
+.footer-info p {
+  color: #6e7074;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+/* Put the social media links on the same line */
+.social-links {
+  display: flex;
+  gap: 12px;
+}
+
+/* Style the social media links */
+.social-links a {
+  color: #0b2727;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Change the color when the mouse is over a social link */
+.social-links a:hover {
+  color: #faa935;
+}
+
+/* Style the footer contact information */
+.footer-contact p {
+  color: #6e7074;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+/* Style the copyright section */
+.copyright {
+  width: 90%;
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding-top: 20px;
+  border-top: 1px solid #dddddd;
+  text-align: center;
+}
+
+/* Style the copyright text */
+.copyright p {
+  color: #6e7074;
+  font-size: 14px;
+}
