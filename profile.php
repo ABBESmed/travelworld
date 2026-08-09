@@ -1,79 +1,196 @@
 <?php
 
-// The profile page must know which user is logged in so we use session_start()
-session_start();
+// Start the session so we can know which user is connected
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Does the session contain a logged-in user ID?
+
+// Protect the page.
+// If the user is not logged in, send them to the login page.
 if (!isset($_SESSION["user_id"])) {
-    // When no user is logged in, send them to the login page
     header("Location: login.php");
-    // now we stop profile.php after the redirect using exit
     exit;
 }
 
-// Now we connect profile.php to the database
+
+// Load the database connection
 require_once __DIR__ . "/config/database.php";
 
-// we Remember the ID of the user whose profile we need to retrieve
-$user_id = $_SESSION["user_id"];
+
+// Get the connected user's ID from the session
+$user_id = (int) $_SESSION["user_id"];
 
 
-// Now we write the SQL query that will find the logged-in user
-$sql = "SELECT full_name, email, profile_picture, created_at FROM users WHERE id = ?";
+// Get the user's information from the database
+$sql = "
+    SELECT
+        full_name,
+        email,
+        profile_picture,
+        created_at
+    FROM users
+    WHERE id = ?
+";
 
-// Now we prepare the SQL query safely
+
+// Prepare the SQL query
 $stmt = mysqli_prepare($conn, $sql);
 
-// Now we connect the real user ID to the ? placeholder i mean inteeger
-mysqli_stmt_bind_param($stmt, "i", $user_id);
 
-// Now we execute the prepared profile query (sends the query to MySQL)
+// Send the user ID to the prepared query
+mysqli_stmt_bind_param(
+    $stmt,
+    "i",
+    $user_id
+);
+
+
+// Execute the query
 mysqli_stmt_execute($stmt);
 
-// Now we connect the columns returned by MySQL to PHP variables
-mysqli_stmt_bind_result($stmt, $full_name, $email, $profile_picture, $created_at);
 
-// Now we fetch the user row from MySQL and place its values into the variables
-mysqli_stmt_fetch($stmt);
+// Get the result
+$result = mysqli_stmt_get_result($stmt);
 
-// Now we close the prepared profile query because the user information has already been retrieved
+
+// Convert the result into a PHP array
+$user = mysqli_fetch_assoc($result);
+
+
+// Close the prepared statement
 mysqli_stmt_close($stmt);
+
+
+// If the user cannot be found, send them back to login
+if (!$user) {
+    header("Location: login.php");
+    exit;
+}
+
+
+// Put the user's information into simple variables
+$full_name = $user["full_name"];
+$email = $user["email"];
+$profile_picture = $user["profile_picture"];
+$created_at = $user["created_at"];
+
+
+// Load the shared website header
+require_once __DIR__ . "/includes/header.php";
 
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - TravelWorld</title>
-</head>
-<body>
-    <main>
-        <h1>My Profile</h1>
-        <p>
-            <strong>Full name:</strong>
-            <?php echo htmlspecialchars($full_name) ?>
-        </p>
+<main>
 
-        <p>
-            <strong>Email:</strong>
-            <?php echo htmlspecialchars($email) ?>
-        </p>
+    <!-- Profile page -->
+    <section class="profile-page">
 
-        <p>
-            <strong>Member since:</strong>
-            <?php echo htmlspecialchars($created_at) ?>
-        </p>
+        <div class="profile-container">
 
-        <?php if (!empty($profile_picture)) { ?>
-            <img src="uploads/profiles/<?php echo htmlspecialchars($profile_picture) ?>" alt="Profile picture" width="150">
-        <?php } else{ ?>
-            <p>No profile picture uploaded.</p>
-        <?php } ?>
 
-        <p><a href="edit_profile.php">Edit profile</a></p>
-        <p><a href="index.php">Back to homepage</a></p>
-    </main>
-</body>
-</html>
+            <!-- Profile title -->
+            <div class="profile-title">
+
+                <p>My account</p>
+
+                <h1>My Profile</h1>
+
+            </div>
+
+
+            <!-- Profile card -->
+            <div class="profile-card">
+
+
+                <!-- Profile picture -->
+                <div class="profile-picture">
+
+                    <?php if (!empty($profile_picture)) { ?>
+
+                        <img
+                            src="uploads/profiles/<?php
+                            echo htmlspecialchars($profile_picture);
+                            ?>"
+                            alt="Profile picture"
+                        >
+
+                    <?php } else { ?>
+
+                        <div class="no-profile-picture">
+                            No photo
+                        </div>
+
+                    <?php } ?>
+
+                </div>
+
+
+                <!-- Profile information -->
+                <div class="profile-info">
+
+                    <h2>
+                        <?php
+                        echo htmlspecialchars($full_name);
+                        ?>
+                    </h2>
+
+
+                    <p>
+                        <strong>Email:</strong>
+
+                        <?php
+                        echo htmlspecialchars($email);
+                        ?>
+                    </p>
+
+
+                    <p>
+                        <strong>Member since:</strong>
+
+                        <?php
+                        echo htmlspecialchars(
+                            date(
+                                "d/m/Y",
+                                strtotime($created_at)
+                            )
+                        );
+                        ?>
+                    </p>
+
+
+                    <!-- Profile actions -->
+                    <div class="profile-actions">
+
+                        <a
+                            href="edit_profile.php"
+                            class="edit-profile-button"
+                        >
+                            Edit profile
+                        </a>
+
+                        <a
+                            href="index.php"
+                            class="profile-home-link"
+                        >
+                            Back to homepage
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+<?php
+
+// Load the shared website footer
+require_once __DIR__ . "/includes/footer.php";
+
+?>

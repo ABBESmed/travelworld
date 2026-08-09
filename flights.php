@@ -1,82 +1,101 @@
 <?php
 
-// remembers the logged-in user
-session_start();
-
-// connects it to my database
-
+// Load the database connection
 require_once __DIR__ . "/config/database.php";
 
-// retrieve all airports for the search form using this sql query
-
-$sql = "SELECT id, name, city, country FROM airports ORDER BY city ASC";
-
-// execute the sql query
-
-$airports_result = mysqli_query($conn, $sql);
-
-// convert the mysql result into a normal php array so we can use it in the dropdown form menu
-
-$airports = mysqli_fetch_all($airports_result, MYSQLI_ASSOC);
-
-// store the airports selected by the user
+// Create empty variables
 $departure_airport_id = "";
 $arrival_airport_id = "";
-
-// store the flights found by the search
+$errors = [];
 $flights = [];
 
-// store the validation errors
-$errors = [];
 
-// Did the user submit the form?
+/*
+Get all airports from the database.
+
+We need them to create the departure
+and arrival <select> options.
+*/
+$sql = "
+    SELECT id, name, city, country
+    FROM airports
+    ORDER BY city ASC
+";
+
+$result = mysqli_query($conn, $sql);
+
+// Convert the MySQL result into a normal PHP array
+$airports = mysqli_fetch_all($result, MYSQLI_ASSOC);
+
+
+/*
+Only search for flights when the form
+has been submitted with POST.
+*/
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // retrieve the two airports selected by the user , Use an empty string when the value was not sent
 
-    $departure_airport_id = $_POST["departure_airport_id"] ?? "";
-    $arrival_airport_id = $_POST["arrival_airport_id"] ?? "";
+    // Get the selected airport IDs from the form
+    $departure_airport_id =
+        $_POST["departure_airport_id"] ?? "";
+
+    $arrival_airport_id =
+        $_POST["arrival_airport_id"] ?? "";
 
 
-    // validate the selected airports
+    // Check that a departure airport was selected
     if ($departure_airport_id === "") {
-        $errors[] = "Departure airport is required.";
+        $errors[] = "Please choose a departure airport.";
     }
 
+
+    // Check that an arrival airport was selected
     if ($arrival_airport_id === "") {
-        $errors[] = "Arrival airport is required.";
+        $errors[] = "Please choose an arrival airport.";
     }
 
-    // prevent selecting the same airport twice
 
-    if ($departure_airport_id !== "" && $arrival_airport_id !== "" && $departure_airport_id === $arrival_airport_id) {
-        $errors[] = "Departure and arrival airports must be different.";
+    // Departure and arrival cannot be the same airport
+    if (
+        $departure_airport_id !== ""
+        && $arrival_airport_id !== ""
+        && $departure_airport_id == $arrival_airport_id
+    ) {
+        $errors[] =
+            "Departure and arrival airports must be different.";
     }
 
-    // Now we search the database only when there are no validation errors
 
+    /*
+    Search the database only when
+    there are no validation errors.
+    */
     if (empty($errors)) {
-// This searches for every available flight that: leaves from the selected airport and arrives at the selected airport
-
 
         $sql = "
-        SELECT
-            f.id,
-            f.flight_number,
-            f.airline_name,
-            f.departure_datetime,
-            f.arrival_datetime,
-            f.price,
-            f.available_seats,
-            departure_airport.city AS departure_city,
-            arrival_airport.city AS arrival_city
+            SELECT
+                f.id,
+                f.flight_number,
+                f.airline_name,
+                f.departure_datetime,
+                f.arrival_datetime,
+                f.price,
+                f.available_seats,
+
+                departure_airport.city
+                    AS departure_city,
+
+                arrival_airport.city
+                    AS arrival_city
 
             FROM flights AS f
 
             INNER JOIN airports AS departure_airport
-                ON f.departure_airport_id = departure_airport.id
-        
+                ON f.departure_airport_id =
+                   departure_airport.id
+
             INNER JOIN airports AS arrival_airport
-                ON f.arrival_airport_id = arrival_airport.id
+                ON f.arrival_airport_id =
+                   arrival_airport.id
 
             WHERE f.departure_airport_id = ?
                 AND f.arrival_airport_id = ?
@@ -86,190 +105,363 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ORDER BY f.departure_datetime ASC
         ";
 
-        // Now we prepare the SQL query
+
+        // Prepare the SQL query
         $stmt = mysqli_prepare($conn, $sql);
 
-        // This will fills the two ? placeholders
-        mysqli_stmt_bind_param($stmt, "ii", $departure_airport_id, $arrival_airport_id);
 
-        // we execute the prepared search (Run the flight search now using the two selected airport IDs)
+        /*
+        ii means we send two integers:
+
+        first i  = departure airport ID
+        second i = arrival airport ID
+        */
+        mysqli_stmt_bind_param(
+            $stmt,
+            "ii",
+            $departure_airport_id,
+            $arrival_airport_id
+        );
+
+
+        // Execute the prepared query
         mysqli_stmt_execute($stmt);
 
-        // Now we retrieve the rows found by MySQL
-        $flights_result = mysqli_stmt_get_result($stmt);
 
-        // Now we convert the MySQL result into a normal PHP array
-        $flights = mysqli_fetch_all($flights_result, MYSQLI_ASSOC);
+        // Get the result returned by MySQL
+        $result = mysqli_stmt_get_result($stmt);
 
-        // Now we close the prepared statement
+
+        // Convert the result into a normal PHP array
+        $flights = mysqli_fetch_all(
+            $result,
+            MYSQLI_ASSOC
+        );
+
+
+        // Close the prepared statement
         mysqli_stmt_close($stmt);
     }
 }
 
+
+// Load the shared website header
+require_once __DIR__ . "/includes/header.php";
+
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flights - TravelWorld</title>
-</head>
-<body>
-    <main>
-        <h1>Search Flights</h1>
+<main>
 
-        <form method="POST">
+    <!-- Flights page -->
+    <section class="flights-page">
 
+        <div class="flights-container">
 
-        <?php if (!empty($errors)) { ?>
+            <!-- Page title -->
+            <div class="flights-title">
 
-            <?php foreach ($errors as $error) { ?>
+                <p>Find your journey</p>
 
-                <p><?php echo htmlspecialchars($error) ?></p>
+                <h1>
+                    Search available flights
+                </h1>
 
-            <?php } ?>
-
-        <?php } ?>
-
-            <label for="departure_airport_id">Departure airport</label>
-            
-            <select id="departure_airport_id" name="departure_airport_id">
-                <option value="">Choose a departure airport</option>
-                    <?php foreach ($airports as $airport) { ?>
-                        <option value="<?php echo (int) $airport["id"] ?>"
-                            <?php if ($departure_airport_id == $airport["id"]) {
-                                echo "selected";
-                            } ?>
-                        >
-
-                        <?= htmlspecialchars(
-                            $airport["city"]
-                            . " - "
-                            . $airport["name"]
-                            . " ("
-                            . $airport["country"]
-                            . ")"
-                        ) ?>
-                        </option>
-                    <?php } ?>
-            </select>
+            </div>
 
 
-            <label for="arrival_airport_id">Arrival airport</label>
+            <!-- Flight search form -->
+            <form
+                method="POST"
+                class="flight-search-form"
+            >
 
-            <select id="arrival_airport_id" name="arrival_airport_id" required>
-                <option value="">Choose an arrival airport</option>
+                <!-- Display validation errors -->
+                <?php if (!empty($errors)) { ?>
 
+                    <div class="flight-errors">
 
-                <?php foreach ($airports as $airport) { ?>
+                        <?php foreach ($errors as $error) { ?>
 
-                    <option
-                        value="<?php echo (int) $airport["id"] ?>"
-                        <?php if (
-                            $arrival_airport_id == $airport["id"]
-                        ) {
-                            echo "selected";
-                        } ?>
-                    >
-                        <?php echo htmlspecialchars(
-                            $airport["city"]
-                            . " - "
-                            . $airport["name"]
-                            . " ("
-                            . $airport["country"]
-                            . ")"
-                        ) ?>
-                    </option>
+                            <p>
+                                <?php
+                                echo htmlspecialchars($error);
+                                ?>
+                            </p>
+
+                        <?php } ?>
+
+                    </div>
 
                 <?php } ?>
 
-            </select>
 
-            <button type="submit">
-                Search flights
-            </button>
-        </form>
+                <div class="flight-search-fields">
 
-        <?php if (
-            $_SERVER["REQUEST_METHOD"] === "POST"
-            && empty($errors)
-        ) { ?>
+                    <!-- Departure airport -->
+                    <div class="flight-form-group">
 
-            <h2>Available Flights</h2>
+                        <label for="departure_airport_id">
+                            Departure airport
+                        </label>
 
-                <?php if (empty($flights)) { ?>
+                        <select
+                            id="departure_airport_id"
+                            name="departure_airport_id"
+                            required
+                        >
 
-                    <p>No flights found for this route.</p>
+                            <option value="">
+                                Choose a departure airport
+                            </option>
 
-                <?php } else { ?>
-                    <?php foreach ($flights as $flight) { ?>
-                        <article>
 
-                            <h3>
-                                <?= htmlspecialchars(
-                                    $flight["airline_name"]
-                                    . " - "
-                                    . $flight["flight_number"]
-                                ) ?>
-                            </h3>
+                            <?php foreach ($airports as $airport) { ?>
 
-                            <p>
-                                <strong>Route:</strong>
+                                <option
+                                    value="<?php echo (int) $airport["id"]; ?>"
 
-                                <?= htmlspecialchars(
-                                    $flight["departure_city"]
-                                    . " → "
-                                    . $flight["arrival_city"]
-                                ) ?>
-                            </p>
+                                    <?php if (
+                                        $departure_airport_id
+                                        == $airport["id"]
+                                    ) {
+                                        echo "selected";
+                                    } ?>
+                                >
 
-                            <p>
-                                <strong>Departure:</strong>
+                                    <?php
+                                    echo htmlspecialchars(
+                                        $airport["city"]
+                                        . " - "
+                                        . $airport["name"]
+                                        . " ("
+                                        . $airport["country"]
+                                        . ")"
+                                    );
+                                    ?>
 
-                                <?= htmlspecialchars(
-                                    date(
-                                        "d/m/Y H:i",
-                                        strtotime($flight["departure_datetime"])
-                                    )
-                                ) ?>
-                            </p>
+                                </option>
 
-                            <p>
-                                <strong>Arrival:</strong>
+                            <?php } ?>
 
-                                <?= htmlspecialchars(
-                                    date(
-                                        "d/m/Y H:i",
-                                        strtotime($flight["arrival_datetime"])
-                                    )
-                                ) ?>
-                            </p>
+                        </select>
 
-                            <p>
-                                <strong>Price:</strong>
+                    </div>
 
-                                <?= number_format(
-                                    (float) $flight["price"],
-                                    2,
-                                    ",",
-                                    " "
-                                ) ?> €
-                            </p>
 
-                            <p>
-                                <strong>Available seats:</strong>
+                    <!-- Arrival airport -->
+                    <div class="flight-form-group">
 
-                                <?= (int) $flight["available_seats"] ?>
-                            </p>
+                        <label for="arrival_airport_id">
+                            Arrival airport
+                        </label>
 
-                            <a href="book_flight.php?flight_id=<?= (int) $flight["id"] ?>">
-                                Book this flight
-                            </a>
-                                <?php } ?>
-                </article>
+                        <select
+                            id="arrival_airport_id"
+                            name="arrival_airport_id"
+                            required
+                        >
+
+                            <option value="">
+                                Choose an arrival airport
+                            </option>
+
+
+                            <?php foreach ($airports as $airport) { ?>
+
+                                <option
+                                    value="<?php echo (int) $airport["id"]; ?>"
+
+                                    <?php if (
+                                        $arrival_airport_id
+                                        == $airport["id"]
+                                    ) {
+                                        echo "selected";
+                                    } ?>
+                                >
+
+                                    <?php
+                                    echo htmlspecialchars(
+                                        $airport["city"]
+                                        . " - "
+                                        . $airport["name"]
+                                        . " ("
+                                        . $airport["country"]
+                                        . ")"
+                                    );
+                                    ?>
+
+                                </option>
+
+                            <?php } ?>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="flight-search-button"
+                >
+                    Search flights
+                </button>
+
+            </form>
+
+
+            <!-- Show results only after a successful search -->
+            <?php if (
+                $_SERVER["REQUEST_METHOD"] === "POST"
+                && empty($errors)
+            ) { ?>
+
+                <section class="flight-results">
+
+                    <h2>
+                        Available Flights
+                    </h2>
+
+
+                    <!-- No flights found -->
+                    <?php if (empty($flights)) { ?>
+
+                        <p class="no-flights">
+                            No flights found for this route.
+                        </p>
+
+
+                    <!-- Flights were found -->
+                    <?php } else { ?>
+
+                        <div class="flight-list">
+
+                            <?php foreach ($flights as $flight) { ?>
+
+                                <article class="flight-card">
+
+                                    <h3>
+                                        <?php
+                                        echo htmlspecialchars(
+                                            $flight["airline_name"]
+                                            . " - "
+                                            . $flight["flight_number"]
+                                        );
+                                        ?>
+                                    </h3>
+
+
+                                    <p>
+                                        <strong>Route:</strong>
+
+                                        <?php
+                                        echo htmlspecialchars(
+                                            $flight["departure_city"]
+                                            . " → "
+                                            . $flight["arrival_city"]
+                                        );
+                                        ?>
+                                    </p>
+
+
+                                    <p>
+                                        <strong>
+                                            Departure:
+                                        </strong>
+
+                                        <?php
+                                        echo htmlspecialchars(
+                                            date(
+                                                "d/m/Y H:i",
+                                                strtotime(
+                                                    $flight[
+                                                        "departure_datetime"
+                                                    ]
+                                                )
+                                            )
+                                        );
+                                        ?>
+                                    </p>
+
+
+                                    <p>
+                                        <strong>
+                                            Arrival:
+                                        </strong>
+
+                                        <?php
+                                        echo htmlspecialchars(
+                                            date(
+                                                "d/m/Y H:i",
+                                                strtotime(
+                                                    $flight[
+                                                        "arrival_datetime"
+                                                    ]
+                                                )
+                                            )
+                                        );
+                                        ?>
+                                    </p>
+
+
+                                    <p>
+                                        <strong>Price:</strong>
+
+                                        <?php
+                                        echo number_format(
+                                            (float) $flight["price"],
+                                            2,
+                                            ",",
+                                            " "
+                                        );
+                                        ?>
+                                        €
+                                    </p>
+
+
+                                    <p>
+                                        <strong>
+                                            Available seats:
+                                        </strong>
+
+                                        <?php
+                                        echo (int)
+                                            $flight["available_seats"];
+                                        ?>
+                                    </p>
+
+
+                                    <a
+                                        class="book-flight-button"
+                                        href="book_flight.php?flight_id=<?php
+                                        echo (int) $flight["id"];
+                                        ?>"
+                                    >
+                                        Book this flight
+                                    </a>
+
+                                </article>
+
+                            <?php } ?>
+
+                        </div>
+
+                    <?php } ?>
+
+                </section>
+
             <?php } ?>
-        <?php } ?>
-    </main>
-</body>
-</html>
+
+        </div>
+
+    </section>
+
+</main>
+
+<?php
+
+// Load the shared website footer
+require_once __DIR__ . "/includes/footer.php";
+
+?>
